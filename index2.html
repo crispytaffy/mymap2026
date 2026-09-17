@@ -50,31 +50,27 @@ fetch('./mapdata.geojson')
 
     const layer = L.geoJSON(data, {
 
-      // -----------------------------
-      // ピンの表示
-      // -----------------------------
+      // データの内容によってピンの色を変える
       pointToLayer: (feature, latlng) => {
 
         const p = feature.properties || {};
 
-        // 利用可能時間を確認
-        const hours = p['利用可能時間特記事項'] || '';
+        // 車椅子使用者用トイレの有無を確認
+        const wheelchair = p['車椅子使用者用トイレ有無'] || '';
 
-        // 「24時間」を含んでいれば緑
-        const is24hours = String(hours).includes('24時間');
+        // 「有」なら緑、それ以外は青
+        const isWheelchairAccessible =
+          String(wheelchair).includes('有');
 
         return L.circleMarker(latlng, {
           radius: 8,
-          color: is24hours ? 'green' : '#3388ff',
-          fillColor: is24hours ? 'green' : '#3388ff',
+          color: isWheelchairAccessible ? 'green' : '#3388ff',
+          fillColor: isWheelchairAccessible ? 'green' : '#3388ff',
           fillOpacity: 0.8
         });
       },
 
-
-      // -----------------------------
-      // ポップアップ
-      // -----------------------------
+      // ピンをクリックしたときのポップアップ
       onEachFeature: (feature, marker) => {
 
         const p = feature.properties || {};
@@ -97,15 +93,21 @@ fetch('./mapdata.geojson')
         }
 
         if (p['車椅子使用者用トイレ有無']) {
-          lines.push(`♿ 車椅子対応：${p['車椅子使用者用トイレ有無']}`);
+          lines.push(
+            `♿ 車椅子対応：${p['車椅子使用者用トイレ有無']}`
+          );
         }
 
         if (p['乳幼児用設備設置トイレ有無']) {
-          lines.push(`👶 乳幼児設備：${p['乳幼児用設備設置トイレ有無']}`);
+          lines.push(
+            `👶 乳幼児設備：${p['乳幼児用設備設置トイレ有無']}`
+          );
         }
 
         if (p['オストメイト設置トイレ有無']) {
-          lines.push(`オストメイト設備：${p['オストメイト設置トイレ有無']}`);
+          lines.push(
+            `オストメイト設備：${p['オストメイト設置トイレ有無']}`
+          );
         }
 
         marker.bindPopup(lines.join('<br>'));
@@ -113,8 +115,6 @@ fetch('./mapdata.geojson')
 
     }).addTo(map);
 
-
-    // 全てのピンが見える範囲に自動調整
     if (layer.getBounds().isValid()) {
       map.fitBounds(
         layer.getBounds(),
